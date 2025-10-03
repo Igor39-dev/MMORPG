@@ -1,10 +1,82 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, logout, get_user_model
+from django.contrib import messages
+
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.core.mail import send_mail
 from django.urls import reverse_lazy
 
-from .models import Post, Reply
+from .models import Post, Reply, OneTimeCode
 from .forms import PostForm
+
+User = get_user_model()
+
+
+def register_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        if not username or not email:
+            messages.error(request, "Введите имя пользователя и email")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, "Такой пользователь уже существует")
+        else:
+            user = User.objects.create_user(username=username, email=email)
+            messages.success(request, "Регистрация прошла успешно. Теперь запросите код для входа.")
+            return redirect("board:request_code")
+
+    return render(request, "board/register.html")
+
+
+def request_code_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            messages.error(request, "Пользователь не найден")
+            return redirect("board:request_code")
+
+        one_time_code = OneTimeCode.generate_for_user(user)
+
+        # пока просто выводим на экран (в реальном проекте — отправка на email)
+        messages.success(request, f"Ваш код: {one_time_code.code}")
+
+        return redirect("board:login_with_code")
+
+    return render(request, "board/request_code.html")
+
+
+def login_with_code_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        code = request.POST.get("code")
+
+        try:
+            user = User.objects.get(username=username)
+            one_time_code = OneTimeCode.objects.filter(user=user, code=code).latest("created_at")
+        except (User.DoesNotExist, OneTimeCode.DoesNotExist):
+            messages.error(request, "Неверные данные")
+            return redirect("board:login_with_code")
+
+        if one_time_code.is_expired():
+            messages.error(request, "Код устарел")
+            return redirect("board:login_with_code")
+
+        login(request, user)
+        messages.success(request, f"Добро пожаловать, {user.username}!")
+        return redirect("board:post_list")
+
+    return render(request, "board/login_with_code.html")
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect("board:post_list")
+
 
 class PostListView(ListView):
     model = Post

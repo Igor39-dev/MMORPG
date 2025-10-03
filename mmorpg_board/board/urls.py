@@ -1,22 +1,25 @@
 from django.urls import path
 from . import views
 
-app_name = 'board'
+app_name = "board"
 
 urlpatterns = [
-    path('', views.PostListView.as_view(), name='post_list'),
-    path('post/<int:pk>/', views.PostDetailView.as_view(), name='post_detail'),
-    path('post/new/', views.PostCreateView.as_view(), name='post_create'),
-    path('post/<int:pk>/edit/', views.PostUpdateView.as_view(), name='post_edit'),
+    # регистрация, логин, логаут
+    path("register/", views.register_view, name="register"),
+    path("request-code/", views.request_code_view, name="request_code"),
+    path("login-code/", views.login_with_code_view, name="login_with_code"),
+    path("logout/", views.logout_view, name="logout"),
 
-    path('reply/create/<int:post_pk>/', views.create_reply_view, name='reply_create'),
+    # посты
+    path("", views.PostListView.as_view(), name="post_list"),
+    path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
+    path("post/add/", views.PostCreateView.as_view(), name="post_add"),
+    path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_edit"),
+    path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),
 
-    path('register/', views.register_view, name='register'),
-    path('request-code/', views.useal_login_view, name='request_code'),
-    path('login-with-code/', views.login_with_code_view, name='login_with_code'),
-    path('logout/', views.logout_view, name='logout'),
-
-    path('my-replies/', views.my_replies_view, name='my_replies'),
-    path('reply/<int:reply_pk>/accept/', views.accept_reply_view, name='reply_accept'),
-    path('reply/<int:reply_pk>/delete/', views.delete_reply_view, name='reply_delete'),
+    # отклики
+    path("post/<int:pk>/reply/", views.ReplyCreateView.as_view(), name="reply_add"),
+    path("my-replies/", views.MyRepliesListView.as_view(), name="my_replies"),
+    path("reply/<int:pk>/accept/", views.ReplyAcceptView.as_view(), name="reply_accept"),
+    path("reply/<int:pk>/delete/", views.ReplyDeleteView.as_view(), name="reply_delete"),
 ]
