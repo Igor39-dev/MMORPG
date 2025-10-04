@@ -95,7 +95,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ["title", "content", "category"]
     template_name = "board/post_form.html"
-    success_url = reverse_lazy("post_list")
+    success_url = reverse_lazy("board:post_list")
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -106,7 +106,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
     fields = ["title", "content", "category", "is_active"]
     template_name = "board/post_form.html"
-    success_url = reverse_lazy("post_list")
+    success_url = reverse_lazy("board:post_list")
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -118,7 +118,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
 class PostDeleteView(LoginRequiredMixin, DeleteView):
     model = Post
     template_name = "board/post_confirm_delete.html"
-    success_url = reverse_lazy("post_list")
+    success_url = reverse_lazy("board:post_list")
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()

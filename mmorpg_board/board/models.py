@@ -1,6 +1,6 @@
 # Create your models here.
 from django.db import models
-from ckeditor_uploader.fields import RichTextUploadingField
+from django_ckeditor_5.fields import CKEditor5Field
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -43,7 +43,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(max_length=255)
 
-    content = RichTextUploadingField()
+    content = CKEditor5Field('Text', config_name='default')
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

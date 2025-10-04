@@ -16,9 +16,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -40,8 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ckeditor',
-    'ckeditor_uploader',
+    'django_ckeditor_5',
     'board', 
 ]
 
@@ -127,21 +123,31 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CKEDITOR_UPLOAD_PATH = "uploads/"   # папка в MEDIA_ROOT
-CKEDITOR_ALLOW_NONIMAGE_FILES = False
+CKEDITOR_5_UPLOAD_PATH = "uploads/"
 
-CKEDITOR_CONFIGS = {
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': 'full',
-        'height': 300,
-        'width': 'auto',
-        'extraPlugins': ','.join([
-            'codesnippet', 'uploadimage', 'youtube'  # примеры
-        ]),
-    },
+        'toolbar': [
+            'heading', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
+            '|', 'imageUpload', 'blockQuote', 'codeBlock', 'insertTable',
+            '|', 'bulletedList', 'numberedList', 'todoList',
+            '|', 'undo', 'redo'
+        ],
+        'image': {
+            'toolbar': [
+                'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
+            ]
+        },
+        'table': {
+            'contentToolbar': [
+                'tableColumn', 'tableRow', 'mergeTableCells'
+            ]
+        },
+    }
 }
-
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@example.com'
