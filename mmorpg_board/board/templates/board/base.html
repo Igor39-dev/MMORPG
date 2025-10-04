@@ -15,12 +15,12 @@
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-              <li class="nav-item"><a class="nav-link" href="{% url 'board:post_create' %}">Создать</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'board:post_add' %}">Создать</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'board:my_replies' %}">Отклики</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'board:logout' %}">Выйти</a></li>
             {% else %}
               <li class="nav-item"><a class="nav-link" href="{% url 'board:register' %}">Регистрация</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'board:request_code' %}">Войти</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'board:login_with_code' %}">Войти</a></li>
             {% endif %}
           </ul>
         </div>

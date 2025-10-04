@@ -40,6 +40,7 @@ def request_code_view(request):
             return redirect("board:request_code")
 
         one_time_code = OneTimeCode.generate_for_user(user)
+        print(f"One-time code for {user.username}: {one_time_code.code}")
 
         # пока просто выводим на экран (в реальном проекте — отправка на email)
         messages.success(request, f"Ваш код: {one_time_code.code}")
@@ -47,7 +48,6 @@ def request_code_view(request):
         return redirect("board:login_with_code")
 
     return render(request, "board/request_code.html")
-
 
 def login_with_code_view(request):
     if request.method == "POST":
