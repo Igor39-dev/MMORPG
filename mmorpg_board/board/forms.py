@@ -1,13 +1,13 @@
 from django import forms
 from .models import Post, Reply
-from ckeditor_uploader.widgets import CKEditorUploadingWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditorUploadingWidget())
+    content = forms.CharField(widget=CKEditor5Widget(config_name='default'))
 
     class Meta:
         model = Post
-        fields = ['title', 'content', 'category']
+        fields = ['category', 'title', 'content']
 
 
 class ReplyForm(forms.ModelForm):

@@ -4,9 +4,9 @@
     <h1>{% if object %}Редактировать{% else %}Создать{% endif %} объявление</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}  <!-- Автоматически рендерит поля формы -->
+        {{ form.as_p }}
         <button type="submit" class="btn btn-success">Сохранить</button>
     </form>
-    <!-- Подключаем скрипты и стили CKEditor -->
+
   {{ form.media }}
 {% endblock %}

@@ -93,7 +93,7 @@ class PostDetailView(DetailView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ["title", "content", "category"]
+    form_class = PostForm
     template_name = "board/post_form.html"
     success_url = reverse_lazy("board:post_list")
 

@@ -116,7 +116,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -126,7 +126,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CKEDITOR_5_UPLOAD_PATH = "uploads/"
+CKEDITOR_5_UPLOAD_PATH = 'uploads/'
+CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
 
 CKEDITOR_5_CONFIGS = {
     'default': {
@@ -146,6 +147,7 @@ CKEDITOR_5_CONFIGS = {
                 'tableColumn', 'tableRow', 'mergeTableCells'
             ]
         },
+        'height': '150px',
     }
 }
 
