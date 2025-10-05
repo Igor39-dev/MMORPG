@@ -2,6 +2,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
+import random
+from allauth.account.signals import user_signed_up
 
 from .models import Reply
 
@@ -41,3 +43,18 @@ def notify_reply_author_on_accept(sender, instance, created, **kwargs):
             [instance.author.email],
             fail_silently=True,
         )
+
+@receiver(user_signed_up)
+def send_verification_code(request, user, **kwargs):
+    code = str(random.randint(100000, 999999))
+    user.verification_code = code
+    user.is_active = False
+    user.save()
+
+    send_mail(
+        'Код подтверждения регистрации',
+        f'Ваш код подтверждения: {code}',
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=False,
+    )

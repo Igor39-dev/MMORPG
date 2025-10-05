@@ -4,12 +4,6 @@ from . import views
 app_name = "board"
 
 urlpatterns = [
-    # регистрация, логин, логаут
-    path("register/", views.register_view, name="register"),
-    path("request-code/", views.request_code_view, name="request_code"),
-    path("login-code/", views.login_with_code_view, name="login_with_code"),
-    path("logout/", views.logout_view, name="logout"),
-
     # посты
     path("", views.PostListView.as_view(), name="post_list"),
     path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
