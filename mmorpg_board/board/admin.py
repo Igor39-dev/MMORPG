@@ -13,8 +13,3 @@ class ReplyAdmin(admin.ModelAdmin):
     list_filter = ('is_accepted', 'is_deleted', 'created_at')
     search_fields = ('text', 'author__username', 'post__title')
 
-@admin.register(OneTimeCode)
-class OneTimeCodeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'code', 'created_at', 'ttl_seconds')
-    list_filter = ('created_at',)
-    search_fields = ('user__username', 'code')
