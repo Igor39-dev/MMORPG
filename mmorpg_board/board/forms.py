@@ -1,5 +1,6 @@
 from django import forms
-from .models import Post, Reply
+from django.contrib.auth.forms import UserCreationForm
+from .models import Post, Reply, CustomUser
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 class PostForm(forms.ModelForm):
@@ -17,3 +18,27 @@ class ReplyForm(forms.ModelForm):
         widgets = {
             'text': forms.Textarea(attrs={'rows': 4}),
         }
+
+
+class RegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ("username", "email", "password1", "password2")
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if CustomUser.objects.filter(email=email, is_verified=True).exists():
+            raise forms.ValidationError("Пользователь с этим e-mail уже зарегистрирован и подтверждён.")
+        return email
+    
+class CodeVerificationForm(forms.Form):
+    code = forms.CharField(max_length=6, required=True, widget=forms.TextInput(attrs={'placeholder': 'Введите код'}))
+
+    def clean_code(self):
+        code = self.cleaned_data['code']
+        if not code.isdigit() or len(code) != 6:
+            raise forms.ValidationError("Код должен состоять из 6 цифр.")
+        return code
+    

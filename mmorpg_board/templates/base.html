@@ -18,10 +18,10 @@
               <li class="nav-item"><span class="navbar-text me-5">{{ user.username }}</span></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'board:post_add' %}">Создать</a></li>
               <li class="nav-item"><a class="nav-link" href="{% url 'board:my_replies' %}">Отклики</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'board:post_list' %}">Выйти</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'board:logout_view' %}">Выйти</a></li>
             {% else %}
-              <li class="nav-item"><a class="nav-link" href="{% url 'account_signup' %}">Регистрация</a></li>
-              <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Войти</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'board:register' %}">Регистрация</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'board:login' %}">Войти</a></li>
             {% endif %}
           </ul>
         </div>

@@ -1,15 +1,17 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
 
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
 
-from .models import Post, Reply
-from .forms import PostForm
+from .models import CustomUser, Post, Reply
+from .forms import PostForm, RegistrationForm, CodeVerificationForm
+
 
 @login_required
 def logout_view(request):
@@ -68,7 +70,6 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
             return redirect("board:post_list")
         return super().dispatch(request, *args, **kwargs)
 
-
 # -------------------------------------------------
 # Отклики
 # -------------------------------------------------
@@ -123,4 +124,57 @@ class ReplyDeleteView(LoginRequiredMixin, DeleteView):
         if obj.post.author != self.request.user:
             return redirect("board:my_replies")
         return super().dispatch(request, *args, **kwargs)
+
+# генерация кода
+def register_view(request):  
+    if request.method == "POST":
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            if CustomUser.objects.filter(email=email, is_verified=True).exists():
+                messages.error(request, "Пользователь с этим e-mail уже зарегистрирован и подтверждён.")
+                return redirect('login')
+            
+            user = form.save(commit=False)
+            user.is_active = True
+            user.is_verified = False
+            user.save()
+
+            user.generate_confirmation_token()
+            send_mail(
+                subject="Код подтверждения регистрации",
+                message=f"Ваш код подтверждения: {user.confirmation_token}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+            )
+
+            messages.success(request, "Регистрация успешна! На вашу почту отправлен код для подтверждения.")
+            return redirect('board:login_with_code', user_id=user.id)
+
+    else:
+        form = RegistrationForm()
+    return render(request, 'board/register.html', {'form': form})
+
+
+def login_with_code_view(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+
+    if request.method == "POST":
+        form = CodeVerificationForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data['code']
+            if user.confirmation_token == code and user.is_token_valid():
+                user.is_verified = True
+                user.confirmation_token = None
+                user.save()
+
+                login(request, user)
+
+                messages.success(request, "Регистрация подтверждена! Вы успешно вошли на сайт.")
+                return redirect('board:post_list')
+            else:
+                messages.error(request, "Неверный или просроченный код.")
+    else:
+        form = CodeVerificationForm()
     
+    return render(request, 'board/login_with_code.html', {'form': form})

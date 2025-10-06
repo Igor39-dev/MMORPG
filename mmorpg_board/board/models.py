@@ -1,4 +1,4 @@
-# Create your models here.
+from datetime import timedelta
 from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
 from django.conf import settings
@@ -6,28 +6,6 @@ from django.utils import timezone
 import secrets
 import string
 from django.contrib.auth.models import AbstractUser
-
-class OneTimeCode(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='one_time_codes'
-    )
-    code = models.CharField(max_length=10)
-    created_at = models.DateTimeField(auto_now_add=True)
-    ttl_seconds = models.PositiveIntegerField(default=120)
-
-    def is_expired(self):
-        return (timezone.now() - self.created_at).total_seconds() > self.ttl_seconds
-
-    def __str__(self):
-        return f'{self.user.username}: {self.code}'
-
-    @classmethod
-    def generate_for_user(cls, user, ttl_seconds=60):
-        alphabet = string.digits
-        code = ''.join(secrets.choice(alphabet) for _ in range(5))
-        return cls.objects.create(user=user, code=code, ttl_seconds=ttl_seconds)
 
 
 class Post(models.Model):
@@ -83,6 +61,19 @@ class Reply(models.Model):
 
 
 class CustomUser(AbstractUser):
-    verification_code = models.CharField(max_length=6, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
+    confirmation_token = models.CharField(max_length=6, blank=True, null=True)
+    token_created_at = models.DateTimeField(auto_now_add=True)
 
+    def generate_confirmation_token(self):
+        alphabet = string.digits
+        self.confirmation_token = ''.join(secrets.choice(alphabet) for _ in range(6))
+        self.token_created_at = timezone.now()
+        self.save()
+
+    def is_token_valid(self):
+        return self.token_created_at >= timezone.now() - timedelta(minutes=2)
+
+    def clear_confirmation_token(self):
+        self.confirmation_token = None
+        self.save()
