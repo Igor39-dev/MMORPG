@@ -12,16 +12,16 @@ def notify_post_author_on_reply(sender, instance, created, **kwargs):
     if created:
         subject = "Новый отклик на ваше объявление"
         message = (
-            f"Здравствуйте, {instance.post.author.username}!\n\n"
+            f"Здравствуйте, {instance.post.user.username}!\n\n"
             f"На ваше объявление «{instance.post.title}» оставлен отклик:\n\n"
             f"{instance.text}\n\n"
-            f"Автор: {instance.author.username}"
+            f"Автор: {instance.user.username}"
         )
         send_mail(
             subject,
             message,
             settings.DEFAULT_FROM_EMAIL,
-            [instance.post.author.email],
+            [instance.post.user.email],
             fail_silently=True,
         )
 
@@ -32,13 +32,13 @@ def notify_reply_author_on_accept(sender, instance, created, **kwargs):
     if not created and instance.is_accepted:
         subject = "Ваш отклик принят!"
         message = (
-            f"Здравствуйте, {instance.author.username}!\n\n"
+            f"Здравствуйте, {instance.user.username}!\n\n"
             f"Ваш отклик на объявление «{instance.post.title}» был принят."
         )
         send_mail(
             subject,
             message,
             settings.DEFAULT_FROM_EMAIL,
-            [instance.author.email],
+            [instance.user.email],
             fail_silently=True,
         )
