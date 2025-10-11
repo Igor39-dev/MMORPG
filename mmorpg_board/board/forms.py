@@ -1,10 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import Post, Reply, CustomUser
-from django_ckeditor_5.widgets import CKEditor5Widget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 class PostForm(forms.ModelForm):
-    content = forms.CharField(widget=CKEditor5Widget(config_name='default'))
+    content = forms.CharField(widget=CKEditorUploadingWidget())
 
     class Meta:
         model = Post
@@ -14,9 +14,9 @@ class PostForm(forms.ModelForm):
 class ReplyForm(forms.ModelForm):
     class Meta:
         model = Reply
-        fields = ['text']
+        fields = ['content']
         widgets = {
-            'text': forms.Textarea(attrs={'rows': 4}),
+            'content': forms.Textarea(attrs={'rows': 4}),
         }
 
 
@@ -41,4 +41,3 @@ class CodeVerificationForm(forms.Form):
         if not code.isdigit() or len(code) != 6:
             raise forms.ValidationError("Код должен состоять из 6 цифр.")
         return code
-    

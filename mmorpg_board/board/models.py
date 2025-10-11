@@ -1,6 +1,7 @@
 from datetime import timedelta
 from django.db import models
-from django_ckeditor_5.fields import CKEditor5Field
+from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField 
 from django.conf import settings
 from django.utils import timezone
 import secrets
@@ -8,47 +9,35 @@ import string
 from django.contrib.auth.models import AbstractUser
 
 
-class Post(models.Model):
-    CATEGORY_CHOICES = [
-        ('TANK', 'Танки'),
-        ('HEAL', 'Хилы'),
-        ('DD', 'ДД'),
-        ('TRADER', 'Торговцы'),
-        ('GUILDMASTER', 'Гилдмастеры'),
-        ('QUESTGIVER', 'Квестгиверы'),
-        ('BLACKSMITH', 'Кузнецы'),
-        ('LEATHERWORKER', 'Кожевники'),
-        ('ALCHEMIST', 'Зельевары'),
-        ('SPELLMASTER', 'Мастера заклинаний'),
-    ]
+class Category(models.Model):
+    name = models.CharField(max_length=100)
 
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='posts'
-    )
-    title = models.CharField(max_length=255)
-    content = CKEditor5Field('Text', config_name='default')
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    def __str__(self):
+        return self.name
+
+
+class Post(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    content = RichTextUploadingField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['-created_at']
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts')
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+        ]
 
 
 class Reply(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='replies')
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='replies'
-    )
-    text = models.TextField()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_replies')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_replies')
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_accepted = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -57,7 +46,7 @@ class Reply(models.Model):
         ordering = ['created_at']
 
     def __str__(self):
-        return f'Отклик от {self.author.username} на {self.post.title[:20]}'
+        return f'Отклик от {self.user.username} на {self.post.title[:20]}'
 
 
 class CustomUser(AbstractUser):
@@ -77,3 +66,4 @@ class CustomUser(AbstractUser):
     def clear_confirmation_token(self):
         self.confirmation_token = None
         self.save()
+        

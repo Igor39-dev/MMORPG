@@ -38,23 +38,23 @@ class PostDetailView(DetailView):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     form_class = PostForm
-    template_name = "board/post_form.html"
+    template_name = "board/actions/post_add.html"
     success_url = reverse_lazy("board:post_list")
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        form.instance.user = self.request.user
         return super().form_valid(form)
 
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
-    fields = ["title", "content", "category", "is_active"]
-    template_name = "board/post_form.html"
+    fields = ["title", "content", "category"]
+    template_name = "board/actions/post_add.html"
     success_url = reverse_lazy("board:post_list")
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.author != self.request.user:
+        if obj.user != self.request.user:
             return redirect("board:post_list")
         return super().dispatch(request, *args, **kwargs)
 
@@ -66,9 +66,10 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.author != self.request.user:
+        if obj.user != self.request.user:
             return redirect("board:post_list")
         return super().dispatch(request, *args, **kwargs)
+
 
 # -------------------------------------------------
 # Отклики
@@ -76,11 +77,11 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
 
 class ReplyCreateView(LoginRequiredMixin, CreateView):
     model = Reply
-    fields = ["text"]
+    fields = ["content"]
     template_name = "board/reply_form.html"
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
+        form.instance.user = self.request.user
         form.instance.post_id = self.kwargs["pk"]
         return super().form_valid(form)
 
@@ -91,10 +92,10 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
 class MyRepliesListView(LoginRequiredMixin, ListView):
     model = Reply
     template_name = "board/my_replies.html"
-    context_object_name = "replies"
+    context_object_name = "user_replies"
 
     def get_queryset(self):
-        return Reply.objects.filter(post__author=self.request.user)
+        return Reply.objects.filter(post__user=self.request.user)
 
 
 class ReplyAcceptView(LoginRequiredMixin, UpdateView):
@@ -109,7 +110,7 @@ class ReplyAcceptView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.post.author != self.request.user:
+        if obj.post.user != self.request.user:
             return redirect("board:my_replies")
         return super().dispatch(request, *args, **kwargs)
 
@@ -121,7 +122,7 @@ class ReplyDeleteView(LoginRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj.post.author != self.request.user:
+        if obj.post.user != self.request.user:
             return redirect("board:my_replies")
         return super().dispatch(request, *args, **kwargs)
 
@@ -133,7 +134,7 @@ def register_view(request):
             email = form.cleaned_data['email']
             if CustomUser.objects.filter(email=email, is_verified=True).exists():
                 messages.error(request, "Пользователь с этим e-mail уже зарегистрирован и подтверждён.")
-                return redirect('login')
+                return redirect('board:login')
             
             user = form.save(commit=False)
             user.is_active = True

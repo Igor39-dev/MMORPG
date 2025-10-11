@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_ckeditor_5',
+    'ckeditor',
+    'ckeditor_uploader',
     'board',
 ]
 
@@ -129,30 +130,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CKEDITOR_5_UPLOAD_PATH = 'uploads/'
-CKEDITOR_5_FILE_UPLOAD_PERMISSION = 'authenticated'
-CKEDITOR_5_ALLOW_ALL_FILE_TYPES = True
+CKEDITOR_UPLOAD_PATH = 'uploads/'
 
-CKEDITOR_5_CONFIGS = {
+CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': [
-            'heading', '|', 'bold', 'italic', 'link', 'underline', 'strikethrough',
-            '|', 'imageUpload', 'blockQuote', 'codeBlock', 'insertTable',
-            '|', 'bulletedList', 'numberedList', 'todoList',
-            '|', 'undo', 'redo'
-        ],
-        'image': {
-            'toolbar': [
-                'imageTextAlternative', 'imageStyle:full', 'imageStyle:side'
-            ]
-        },
-        'table': {
-            'contentToolbar': [
-                'tableColumn', 'tableRow', 'mergeTableCells'
-            ]
-        },
-        'height': '150px',
-    }
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'extraPlugins': ','.join([
+            'codesnippet', 'uploadimage', 'autolink', 'autogrow',
+        ]),
+    },
 }
 
 DEFAULT_FROM_EMAIL = 'no-reply@example.com'
