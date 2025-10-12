@@ -17,12 +17,18 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from ckeditor_uploader.views import upload, browse
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.urls import include, path, re_path
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('board.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    re_path(r'^upload/', login_required(upload), name='ckeditor_upload'),
+    re_path(r'^browse/', login_required(never_cache(browse)), name='ckeditor_browse'),
 ]
 
 if settings.DEBUG:

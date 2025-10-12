@@ -10,14 +10,12 @@ urlpatterns = [
     path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("post/add/", views.PostCreateView.as_view(), name="post_add"),
     path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_edit"),
-    path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),
 
     # отклики
-    path("post/<int:pk>/reply/", views.ReplyCreateView.as_view(), name="reply_add"),
     path("my-replies/", views.MyRepliesListView.as_view(), name="my_replies"),
     path("reply/<int:pk>/accept/", views.ReplyAcceptView.as_view(), name="reply_accept"),
     path("reply/<int:pk>/delete/", views.ReplyDeleteView.as_view(), name="reply_delete"),
-
+    
     # регистрация и одноразовый код
     path("register/", views.register_view, name="register"),
     path("login-with-code/<int:user_id>/", views.login_with_code_view, name="login_with_code"),

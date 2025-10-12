@@ -12,11 +12,15 @@ class PostForm(forms.ModelForm):
 
 
 class ReplyForm(forms.ModelForm):
+
     class Meta:
         model = Reply
         fields = ['content']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 4}),
+            'content': forms.Textarea(attrs={'rows': 4, 'cols': 75}),
+        }
+        labels = {
+            'content': '',
         }
 
 
@@ -32,7 +36,8 @@ class RegistrationForm(UserCreationForm):
         if CustomUser.objects.filter(email=email, is_verified=True).exists():
             raise forms.ValidationError("Пользователь с этим e-mail уже зарегистрирован и подтверждён.")
         return email
-    
+
+
 class CodeVerificationForm(forms.Form):
     code = forms.CharField(max_length=6, required=True, widget=forms.TextInput(attrs={'placeholder': 'Введите код'}))
 

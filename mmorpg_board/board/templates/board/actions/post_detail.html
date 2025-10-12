@@ -1,0 +1,44 @@
+<!-- детали поста и отклика -->
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body">
+    <h2 class="card-title">{{ post.title }}</h2>
+    <p class="text-muted mb-1">
+      <strong>Категория:</strong> {{ post.category.name }} |
+      <strong>Автор:</strong> {{ post.user.username }}
+    </p>
+
+    <div style='max-width: 800px'>
+      {{ post.content|safe }}
+    </div>
+
+    <hr>
+    <br>
+    {% if user.is_authenticated %}
+    <h3>Добавить комментарий</h3>
+    
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Добавить">
+    </form>
+    {% else %}
+        <h5>Авторизуйтесь, чтобы оставлять комментарии</h5>
+    {% endif %}
+
+    {% if post.post_replies.all %}
+         <h3>Все комментарии</h3>
+        {% for comment in post.post_replies.all %}
+            <p class="text-muted mb-1">{{ comment.user.username }} от {{ comment.created_at }}:</p>
+             {{ comment.content }}
+        {% endfor %}
+    {% else %}
+         <br>
+         <h5>Комментариев пока нет!</h5>
+    {% endif %}
+
+{% endblock content %}

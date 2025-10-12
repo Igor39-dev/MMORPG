@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 from django.urls import reverse_lazy
 
 from .models import CustomUser, Post, Reply
-from .forms import PostForm, RegistrationForm, CodeVerificationForm
+from .forms import PostForm, RegistrationForm, CodeVerificationForm, ReplyForm
 
 
 @login_required
@@ -31,9 +31,37 @@ class PostListView(ListView):
 
 class PostDetailView(DetailView):
     model = Post
-    template_name = "board/post_detail.html"
+    template_name = "board/actions/post_detail.html"
     context_object_name = "post"
 
+    def post(self, request, *args, **kwargs):
+        post = self.get_object()
+        form = ReplyForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = request.user
+            comment.post = post
+            comment.save()
+            send_mail(
+                subject='На ваш пост был оставлен комментарий!',
+                message=(
+                    f'Привет, '
+                    f'{post.user.username}!\n'
+                    f'На ваше объявление "{post.title}" '
+                    f'был оставлен комментарий от пользователя '
+                    f'{comment.user.username} '
+                    f'с содержанием:\n"{comment.content}"'
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[post.user.email]
+            )
+            return redirect('board:post_detail', pk=post.pk)
+        return render(request, 'board:post_detail.html', {'form': form})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = ReplyForm()
+        return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -58,36 +86,9 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
             return redirect("board:post_list")
         return super().dispatch(request, *args, **kwargs)
 
-
-class PostDeleteView(LoginRequiredMixin, DeleteView):
-    model = Post
-    template_name = "board/post_confirm_delete.html"
-    success_url = reverse_lazy("board:post_list")
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.user != self.request.user:
-            return redirect("board:post_list")
-        return super().dispatch(request, *args, **kwargs)
-
-
 # -------------------------------------------------
 # Отклики
 # -------------------------------------------------
-
-class ReplyCreateView(LoginRequiredMixin, CreateView):
-    model = Reply
-    fields = ["content"]
-    template_name = "board/reply_form.html"
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.post_id = self.kwargs["pk"]
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("board:post_detail", kwargs={"pk": self.kwargs["pk"]})
-
 
 class MyRepliesListView(LoginRequiredMixin, ListView):
     model = Reply
@@ -126,7 +127,7 @@ class ReplyDeleteView(LoginRequiredMixin, DeleteView):
             return redirect("board:my_replies")
         return super().dispatch(request, *args, **kwargs)
 
-# генерация кода
+# генерация кода / регистрация
 def register_view(request):  
     if request.method == "POST":
         form = RegistrationForm(request.POST)
