@@ -1,0 +1,25 @@
+.post-content-wrapper img,
+.post-content-wrapper video,
+.post-content-wrapper iframe {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.post-content-wrapper .align-left {
+    float: left;
+    margin-right: 15px;
+    margin-bottom: 10px;
+}
+
+.post-content-wrapper .align-right {
+    float: right;
+    margin-left: 15px;
+    margin-bottom: 10px;
+}
+
+.post-content-wrapper::after {
+    content: "";
+    display: block;
+    clear: both;
+}
