@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, Post
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -19,3 +19,11 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'user', 'category', 'created_at', 'updated_at')
+    list_filter = ('category', 'created_at')
+    search_fields = ('title', 'content', 'user__username')
+    ordering = ('-created_at',)
