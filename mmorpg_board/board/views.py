@@ -9,6 +9,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
 
+from board.filters import ReplyFilter
+
 from .models import CustomUser, Post, Reply
 from .forms import PostForm, RegistrationForm, CodeVerificationForm, ReplyForm
 
@@ -73,61 +75,54 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-
-class PostUpdateView(LoginRequiredMixin, UpdateView):
-    model = Post
-    fields = ["title", "content", "category"]
-    template_name = "board/actions/post_add.html"
-    success_url = reverse_lazy("board:post_list")
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.user != self.request.user:
-            return redirect("board:post_list")
-        return super().dispatch(request, *args, **kwargs)
-
 # -------------------------------------------------
 # Отклики
 # -------------------------------------------------
 
-class MyRepliesListView(LoginRequiredMixin, ListView):
+class RepliesView(LoginRequiredMixin, ListView):
+
+    def __init__(self):
+        super().__init__()
+        self.filter = None
+
     model = Reply
-    template_name = "board/my_replies.html"
-    context_object_name = "user_replies"
+    context_object_name = 'comments'
+    template_name = 'board/actions/replies.html'
+    filterset_class = ReplyFilter
 
     def get_queryset(self):
-        return Reply.objects.filter(post__user=self.request.user)
+        base_qs = super().get_queryset()
+        qs = base_qs.filter(post__user=self.request.user)
+        self.filter = ReplyFilter(self.request.GET, queryset=qs, request=self.request.user)
+        return self.filter.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filter
+        return context
 
 
-class ReplyAcceptView(LoginRequiredMixin, UpdateView):
-    model = Reply
-    fields = []
-    template_name = "board/reply_accept.html"
-    success_url = reverse_lazy("board:my_replies")
-
-    def form_valid(self, form):
-        form.instance.is_accepted = True
-        return super().form_valid(form)
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.post.user != self.request.user:
-            return redirect("board:my_replies")
-        return super().dispatch(request, *args, **kwargs)
+def confirm_comment(request, comment_id):
+    comment = Reply.objects.get(id=comment_id)
+    comment.is_accepted = True
+    comment.save()
+    send_mail(
+        subject='Ваш отклик одобрен',
+        message=f'Привет, {comment.user.username}! Комментарий, который вы оставили, был одобрен автором объявления!',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[comment.user.email]
+    )
+    return redirect('board:replies')
 
 
-class ReplyDeleteView(LoginRequiredMixin, DeleteView):
-    model = Reply
-    template_name = "board/reply_confirm_delete.html"
-    success_url = reverse_lazy("board:my_replies")
+def delete_comment(request, comment_id):
+    Reply.objects.get(id=comment_id).delete()
+    return redirect('board:replies')
 
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.post.user != self.request.user:
-            return redirect("board:my_replies")
-        return super().dispatch(request, *args, **kwargs)
-
+# -------------------------------------------------
 # генерация кода / регистрация
+# -------------------------------------------------
+
 def register_view(request):  
     if request.method == "POST":
         form = RegistrationForm(request.POST)

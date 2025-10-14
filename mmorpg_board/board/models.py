@@ -40,13 +40,9 @@ class Reply(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_accepted = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['created_at']
-
-    def __str__(self):
-        return f'Отклик от {self.user.username} на {self.post.title[:20]}'
 
 
 class CustomUser(AbstractUser):
@@ -66,4 +62,3 @@ class CustomUser(AbstractUser):
     def clear_confirmation_token(self):
         self.confirmation_token = None
         self.save()
-        
